@@ -40,6 +40,7 @@
                         "mongoose"      : "~ 3.8.0",
                         "pointer"       : "~ 0.1.7",
                         "puncher"       : "~ 1.1.1",
+                        "raphael"       : "~ 2.1.0",
                         "revalidator"   : "~ 0.1.5",
                         "resolve"       : "~ 0.5.1",
                         "send"          : "~ 0.1.0",

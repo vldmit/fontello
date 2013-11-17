@@ -5,6 +5,7 @@ var _       = require('lodash');
 var async   = require('async');
 var XMLDOMParser = require('xmldom').DOMParser;
 var SvgPath = require('svgpath');
+var Raphael = require('raphael');
 
 var utils   = require('../../_lib/utils');
 
@@ -228,13 +229,23 @@ function import_svg_image(data, file) {
 
   var allocatedRefCode = (!maxRef) ? 0xe800 : utils.fixedCharCodeAt(maxRef) + 1;
   var svgTag = xmlDoc.getElementsByTagName('svg')[0];
-  var pathTags = xmlDoc.getElementsByTagName('path');
 
-  if (pathTags.length !== 1) {
-    N.wire.emit('notify', t('error.bad_svg_image', { name: file.name }));
+  var addPath = function(node) {
+    var path = '';
+    switch (node.nodeName) {
+      case 'path':
+        path = Raphael._pathToAbsolute(node.getAttribute('d'));
+        break;
+      case 'svg':
+      case 'g':
+        _.forEach(node.childNodes, function(node) { path = path + addPath(node)});
+        break;
+    }
+
+    return path;
   }
-  
-  var d = pathTags[0].getAttribute('d');
+
+  var compoundPath = addPath(svgTag);
 
   // getting viewBox values array
   var viewBox = _.map(
@@ -257,7 +268,7 @@ function import_svg_image(data, file) {
 
   // Scale to standard grid
   var scale  = 1000 / height;
-  d = new SvgPath(d)
+  var d = new SvgPath(compoundPath)
             .translate(-x, -y)
             .scale(scale)
             .abs()
